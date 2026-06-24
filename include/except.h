@@ -67,4 +67,5 @@ void Except_raise(const T *e, const char *file, int line);
     } if (Except_flag == Except_raised) RERAISE;        \
     } while (0);
 
+#undef T
 #endif
