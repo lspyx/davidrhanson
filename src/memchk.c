@@ -14,7 +14,7 @@ union align {
     float f;
     double d;
     long double ld;
-}
+};
 
 // macros
 #define hash(p, t) (((unsigned long)(p)>>3) & (sizeof(t)/sizeof((t)[0]-1)))
@@ -48,7 +48,7 @@ void Mem_free(void *ptr, const char *file, int line) {
         // set bp if ptr is valid
         if (((unsigned long) ptr)%(sizeof(union align)) != 0
             || (bp = find(ptr)) == NULL
-            || bp-free) {
+            || bp->free) {
             Except_raise(&Assert_Failed, file, line);
         }
         bp->free = freelist.free;
@@ -65,7 +65,7 @@ void *Mem_resize(void *ptr, long nbytes, const char *file, int line) {
     // set bp if ptr is valid
     if (((unsigned long) ptr)%(sizeof(union align)) != 0
         || (bp = find(ptr)) == NULL
-        || bp-free) {
+        || bp->free) {
         Except_raise(&Assert_Failed, file, line);
     }
     newptr = Mem_alloc(nbytes, file, line);
@@ -74,7 +74,7 @@ void *Mem_resize(void *ptr, long nbytes, const char *file, int line) {
     return newptr;
 }
 
-void *Mem_calloc(long countr, long nbytes, const char *file, int line) {
+void *Mem_calloc(long count, long nbytes, const char *file, int line) {
     void *ptr;
 
     assert(count > 0);
@@ -108,8 +108,10 @@ void *Mem_alloc(long nbytes, const char *file, int line) {
     void *ptr;
 
     assert(nbytes > 0);
-    nbytes = ((nbytes + sizeof(union align) - 1) /
-              (sizeof(union align))) * (sizeof(union align));
+
+    nbytes = ((nbytes + sizeof(union align) - 1)
+              / (sizeof(union align)))
+        * (sizeof(union align));
     for (bp = freelist.free; bp; bp = bp->free) {
         if (bp->size > nbytes) {
             bp->size -= nbytes;
